@@ -1,14 +1,15 @@
-package types
+package internal
 
-import "errors"
-
-var errNilValue = errors.New("can not convert nil to types")
+import "time"
 
 type nilVariant struct {
 }
 
 func (v nilVariant) IsNil() bool {
 	return true
+}
+func (v nilVariant) IsZero() bool {
+	return false
 }
 func (v nilVariant) Uint8E() (uint8, error) {
 	return 0, errNilValue
@@ -52,46 +53,12 @@ func (v nilVariant) Float64E() (float64, error) {
 func (v nilVariant) BoolE() (bool, error) {
 	return false, errNilValue
 }
-
-func (v nilVariant) Uint8() uint8 {
-	return 0
+func (v nilVariant) StringE() (string, error) {
+	return "", errNilValue
 }
-func (v nilVariant) Uint16() uint16 {
-	return 0
+func (v nilVariant) DurationE() (time.Duration, error) {
+	return 0, errNilValue
 }
-func (v nilVariant) Uint32() uint32 {
-	return 0
-}
-func (v nilVariant) Uint64() uint64 {
-	return 0
-}
-func (v nilVariant) Uint() uint {
-	return 0
-}
-func (v nilVariant) Int8() int8 {
-	return 0
-}
-func (v nilVariant) Int16() int16 {
-	return 0
-}
-func (v nilVariant) Int32() int32 {
-	return 0
-}
-func (v nilVariant) Int64() int64 {
-	return 0
-}
-func (v nilVariant) Int() int {
-	return 0
-}
-func (v nilVariant) Byte() byte {
-	return 0
-}
-func (v nilVariant) Float32() float32 {
-	return 0
-}
-func (v nilVariant) Float64() float64 {
-	return 0
-}
-func (v nilVariant) Bool() bool {
-	return false
+func (v nilVariant) TimeE() (time.Time, error) {
+	return time.Time{}, errNilValue
 }

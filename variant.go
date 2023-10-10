@@ -1,9 +1,22 @@
 package types
 
-import "github.com/ipsusila/types/internal"
+import (
+	"time"
 
+	"github.com/ipsusila/types/internal"
+)
+
+var _ internal.VariantE = Variant(nil)
+
+// Variant holds various value and handle type conversion.
+//
+// For conversion to time.Duration and time.Time,
+// if value type is floating point, e.g. nnn.fff
+// then nnn will be treated as seconds,
+// while fff will be treated as nano seconds.
 type Variant interface {
 	IsNil() bool
+	IsZero() bool
 	Uint8E() (uint8, error)
 	Uint16E() (uint16, error)
 	Uint32E() (uint32, error)
@@ -18,6 +31,9 @@ type Variant interface {
 	Float32E() (float32, error)
 	Float64E() (float64, error)
 	BoolE() (bool, error)
+	StringE() (string, error)
+	DurationE() (time.Duration, error)
+	TimeE() (time.Time, error)
 
 	Uint8() uint8
 	Uint16() uint16
@@ -33,6 +49,9 @@ type Variant interface {
 	Float32() float32
 	Float64() float64
 	Bool() bool
+	String() string
+	Duration() time.Duration
+	Time() time.Time
 }
 
 type variant struct {
@@ -41,21 +60,17 @@ type variant struct {
 
 // NewVariant create variant from given value
 func NewVariant(i interface{}) Variant {
-	if i == nil {
-		return nilVariant{}
-	} else if v, ok := i.(Variant); ok {
+	if v, ok := i.(Variant); ok {
 		return v
 	}
-
-	v := internal.NewVariantE(i)
-	if v == nil {
-		return nilVariant{}
-	}
-	return variant{v: v}
+	return variant{v: internal.NewVariantE(i)}
 }
 
 func (v variant) IsNil() bool {
-	return false
+	return v.v == nil || v.v.IsNil()
+}
+func (v variant) IsZero() bool {
+	return v.v.IsZero()
 }
 func (v variant) Uint8E() (uint8, error) {
 	return v.v.Uint8E()
@@ -100,6 +115,15 @@ func (v variant) Float64E() (float64, error) {
 }
 func (v variant) BoolE() (bool, error) {
 	return v.v.BoolE()
+}
+func (v variant) StringE() (string, error) {
+	return v.v.StringE()
+}
+func (v variant) DurationE() (time.Duration, error) {
+	return v.v.DurationE()
+}
+func (v variant) TimeE() (time.Time, error) {
+	return v.v.TimeE()
 }
 
 func (v variant) Uint8() uint8 {
@@ -157,4 +181,16 @@ func (v variant) Float64() float64 {
 func (v variant) Bool() bool {
 	b, _ := v.v.BoolE()
 	return b
+}
+func (v variant) String() string {
+	s, _ := v.v.StringE()
+	return s
+}
+func (v variant) Duration() time.Duration {
+	d, _ := v.v.DurationE()
+	return d
+}
+func (v variant) Time() time.Time {
+	t, _ := v.v.TimeE()
+	return t
 }

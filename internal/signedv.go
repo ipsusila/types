@@ -2,12 +2,21 @@ package internal
 
 import (
 	"math"
+	"strconv"
+	"time"
 
 	"golang.org/x/exp/constraints"
 )
 
 type signedVariant[T constraints.Signed] struct {
 	val T
+}
+
+func (s signedVariant[T]) IsNil() bool {
+	return false
+}
+func (s signedVariant[T]) IsZero() bool {
+	return s.val == 0
 }
 
 func (s signedVariant[T]) Uint8E() (uint8, error) {
@@ -88,8 +97,10 @@ func (s signedVariant[T]) IntE() (int, error) {
 	return int(s.val), nil
 }
 func (s signedVariant[T]) ByteE() (byte, error) {
-	v := int64(s.val)
-	if v < math.MinInt8 || v > math.MaxInt8 {
+	if s.val < 0 {
+		return 0, errNegativeNotAllowed
+	}
+	if uint64(s.val) > math.MaxUint8 {
 		return byte(s.val), errCastDataLost
 	}
 	return byte(s.val), nil
@@ -105,4 +116,17 @@ func (s signedVariant[T]) BoolE() (bool, error) {
 		return false, nil
 	}
 	return true, nil
+}
+func (s signedVariant[T]) StringE() (string, error) {
+	return strconv.FormatInt(int64(s.val), 10), nil
+}
+func (s signedVariant[T]) DurationE() (time.Duration, error) {
+	return time.Duration(s.val), nil
+}
+func (s signedVariant[T]) TimeE() (time.Time, error) {
+	i64, err := s.Int64E()
+	if err != nil {
+		return time.Time{}, err
+	}
+	return time.Unix(i64, 0), nil
 }
