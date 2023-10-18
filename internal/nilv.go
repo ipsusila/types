@@ -1,6 +1,9 @@
 package internal
 
-import "time"
+import (
+	"database/sql/driver"
+	"time"
+)
 
 type nilVariant struct {
 }
@@ -61,4 +64,10 @@ func (v nilVariant) DurationE() (time.Duration, error) {
 }
 func (v nilVariant) TimeE() (time.Time, error) {
 	return time.Time{}, errNilValue
+}
+func (v nilVariant) Value() (driver.Value, error) {
+	return nil, nil
+}
+func (v nilVariant) MarshalJSON() ([]byte, error) {
+	return []byte{'n', 'u', 'l', 'l'}, nil
 }

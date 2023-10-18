@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"database/sql/driver"
+	"encoding/json"
 	"math"
 	"time"
 )
@@ -120,4 +122,11 @@ func (t timeVariant) TimeE() (time.Time, error) {
 }
 func (t timeVariant) epochNano() int64 {
 	return time.Time(t).UnixNano()
+}
+func (t timeVariant) Value() (driver.Value, error) {
+	return driver.Value(time.Time(t)), nil
+}
+func (t timeVariant) MarshalJSON() ([]byte, error) {
+	str := time.Time(t).Format(time.RFC3339Nano)
+	return json.Marshal(str)
 }

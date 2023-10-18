@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -27,6 +28,9 @@ type VariantE interface {
 	StringE() (string, error)
 	DurationE() (time.Duration, error)
 	TimeE() (time.Time, error)
+
+	Value() (driver.Value, error)
+	MarshalJSON() ([]byte, error)
 }
 
 // indirect get pointed value as interface.

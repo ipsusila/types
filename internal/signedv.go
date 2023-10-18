@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"database/sql/driver"
 	"math"
 	"strconv"
 	"time"
@@ -129,4 +130,14 @@ func (s signedVariant[T]) TimeE() (time.Time, error) {
 		return time.Time{}, err
 	}
 	return time.Unix(i64, 0), nil
+}
+func (s signedVariant[T]) Value() (driver.Value, error) {
+	return driver.Value(int64(s.val)), nil
+}
+func (s signedVariant[T]) MarshalJSON() ([]byte, error) {
+	i64, err := s.Int64E()
+	if err != nil {
+		return nil, err
+	}
+	return strconv.AppendInt(nil, i64, 10), nil
 }

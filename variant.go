@@ -1,6 +1,7 @@
 package types
 
 import (
+	"database/sql/driver"
 	"time"
 
 	"github.com/ipsusila/types/internal"
@@ -52,6 +53,9 @@ type Variant interface {
 	String() string
 	Duration() time.Duration
 	Time() time.Time
+
+	Value() (driver.Value, error)
+	MarshalJSON() ([]byte, error)
 }
 
 type variant struct {
@@ -193,4 +197,10 @@ func (v variant) Duration() time.Duration {
 func (v variant) Time() time.Time {
 	t, _ := v.v.TimeE()
 	return t
+}
+func (v variant) Value() (driver.Value, error) {
+	return v.v.Value()
+}
+func (v variant) MarshalJSON() ([]byte, error) {
+	return v.v.MarshalJSON()
 }

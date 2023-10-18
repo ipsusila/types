@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"database/sql/driver"
 	"strconv"
 	"time"
 )
@@ -104,4 +105,13 @@ func (v boolVariant) DurationE() (time.Duration, error) {
 }
 func (v boolVariant) TimeE() (time.Time, error) {
 	return time.Time{}, errCannotConvert
+}
+func (v boolVariant) Value() (driver.Value, error) {
+	return driver.Value(v.val), nil
+}
+func (v boolVariant) MarshalJSON() ([]byte, error) {
+	if v.val {
+		return []byte{'t', 'r', 'u', 'e'}, nil
+	}
+	return []byte{'f', 'a', 'l', 's', 'e'}, nil
 }

@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"database/sql/driver"
+	"encoding/json"
 	"errors"
 	"strconv"
 	"time"
@@ -102,4 +104,10 @@ func (s stringVariant) DurationE() (time.Duration, error) {
 func (s stringVariant) TimeE() (time.Time, error) {
 	// TODO:
 	return time.Time{}, nil
+}
+func (s stringVariant) Value() (driver.Value, error) {
+	return driver.Value(s.val), nil
+}
+func (s stringVariant) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.val)
 }

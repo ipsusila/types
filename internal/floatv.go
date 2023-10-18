@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"database/sql/driver"
 	"math"
 	"strconv"
 	"time"
@@ -166,4 +167,11 @@ func (f floatVariant[T]) secNano() (int64, int64) {
 	nano := (f64 - sec) * 1000_000_000
 
 	return int64(sec), int64(nano)
+}
+
+func (f floatVariant[T]) Value() (driver.Value, error) {
+	return driver.Value(float64(f.val)), nil
+}
+func (f floatVariant[T]) MarshalJSON() ([]byte, error) {
+	return strconv.AppendFloat(nil, float64(f.val), 'f', -1, f.bitSize), nil
 }
