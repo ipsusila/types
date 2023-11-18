@@ -52,25 +52,53 @@ func TestMarshalValue(t *testing.T) {
 		{tm, strconv.Quote(ts)},
 	}
 
-	var v types.Variant
+	var v types.RVariant
 	for _, val := range vals {
-		v = types.NewVariant(val.val)
+		v = types.NewRVariant(val.val)
 		data, err := v.MarshalJSON()
 		assert.NoError(t, err)
 		assert.Equal(t, val.exp, string(data))
 	}
 }
 
+func TestRWVariant(t *testing.T) {
+	type datExp struct {
+		data string
+		exp  string
+		err  bool
+	}
+	vals := []datExp{
+		{`null`, ``, false},
+		{`123.123`, `123.123`, false},
+		{`"text message"`, `text message`, false},
+		{`"123.123"`, `123.123`, false},
+		{`123`, `123`, false},
+		{`true`, `true`, false},
+		{`false`, `false`, false},
+		{`error`, "", true},
+	}
+
+	for _, d := range vals {
+		v := types.NewVariant()
+		err := v.UnmarshalJSON([]byte(d.data))
+		if !d.err {
+			assert.NoError(t, err)
+		}
+		assert.Equal(t, d.exp, v.String())
+		fmt.Printf("  val: %#v\n", v)
+	}
+}
+
 func TestVariant(t *testing.T) {
-	v := types.NewVariant(nil)
+	v := types.NewRVariant(nil)
 	fmt.Printf("%#v\n", v)
 
-	v = types.NewVariant(1000)
+	v = types.NewRVariant(1000)
 	fmt.Printf("%#v\n", v)
 	u8, err := v.Uint8E()
 	fmt.Println(u8, err)
 
-	v = types.NewVariant(110.123)
+	v = types.NewRVariant(110.123)
 	fmt.Printf("%#v\n", v)
 	u8, err = v.Uint8E()
 	fmt.Println(u8, err)
@@ -80,45 +108,45 @@ func TestVariant(t *testing.T) {
 	fmt.Println(buf.Len())
 
 	vi := 123
-	v = types.NewVariant(&vi)
+	v = types.NewRVariant(&vi)
 	fmt.Printf("%#v\n", v)
 	u8, err = v.Uint8E()
 	fmt.Println(u8, err)
 
-	v = types.NewVariant(float32(math.MaxFloat32))
+	v = types.NewRVariant(float32(math.MaxFloat32))
 	fmt.Printf("%#v\n", v)
 	u8, err = v.Uint8E()
 	fmt.Println(u8, err)
 
-	v = types.NewVariant(1 + float64(math.MaxFloat32))
+	v = types.NewRVariant(1 + float64(math.MaxFloat32))
 	fmt.Printf("%#v\n", v)
 	f32, err := v.Float32E()
 	fmt.Println(f32, err)
 
-	v = types.NewVariant(true)
+	v = types.NewRVariant(true)
 	fmt.Println(v.String())
 
-	v = types.NewVariant("0xFF")
+	v = types.NewRVariant("0xFF")
 	fmt.Printf("%#v\n", v)
 	f32, err = v.Float32E()
 	fmt.Println(f32, err)
 
-	v = types.NewVariant("0xFFFF_FFFF_FFFF_FFFF")
+	v = types.NewRVariant("0xFFFF_FFFF_FFFF_FFFF")
 	fmt.Printf("%#v\n", v)
 	f32, err = v.Float32E()
 	fmt.Println(f32, err)
 
-	v = types.NewVariant(".123")
+	v = types.NewRVariant(".123")
 	fmt.Printf("%#v\n", v)
 	f32, err = v.Float32E()
 	fmt.Println(f32, err)
 
-	v = types.NewVariant(stringer{v: 123})
+	v = types.NewRVariant(stringer{v: 123})
 	fmt.Printf("%#v\n", v)
 	f32, err = v.Float32E()
 	fmt.Println(f32, err)
 
-	v = types.NewVariant(time.Second)
+	v = types.NewRVariant(time.Second)
 	fmt.Printf("%#v\n", v)
 	f32, err = v.Float32E()
 	fmt.Println(f32, err)

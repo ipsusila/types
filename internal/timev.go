@@ -15,6 +15,10 @@ func (t timeVariant) IsNil() bool {
 func (t timeVariant) IsZero() bool {
 	return time.Time(t).IsZero()
 }
+func (t timeVariant) Interface() any {
+	return time.Time(t)
+}
+
 func (t timeVariant) Uint8E() (uint8, error) {
 	en := t.epochNano()
 	if en < 0 {

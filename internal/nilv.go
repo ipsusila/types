@@ -14,6 +14,9 @@ func (v nilVariant) IsNil() bool {
 func (v nilVariant) IsZero() bool {
 	return false
 }
+func (v nilVariant) Interface() any {
+	return nil
+}
 func (v nilVariant) Uint8E() (uint8, error) {
 	return 0, errNilValue
 }

@@ -19,6 +19,9 @@ func (u unsignedVariant[T]) IsNil() bool {
 func (u unsignedVariant[T]) IsZero() bool {
 	return u.val == 0
 }
+func (u unsignedVariant[T]) Interface() any {
+	return u.val
+}
 
 func (u unsignedVariant[T]) Uint8E() (uint8, error) {
 	if uint64(u.val) > math.MaxUint8 {

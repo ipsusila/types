@@ -18,6 +18,9 @@ func (s stringVariant) IsNil() bool {
 func (s stringVariant) IsZero() bool {
 	return s.val == ""
 }
+func (s stringVariant) Interface() any {
+	return s.val
+}
 func (s stringVariant) Uint8E() (uint8, error) {
 	u, err := strconv.ParseUint(s.val, 0, 8)
 	return uint8(u), err

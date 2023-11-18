@@ -19,6 +19,9 @@ func (s signedVariant[T]) IsNil() bool {
 func (s signedVariant[T]) IsZero() bool {
 	return s.val == 0
 }
+func (s signedVariant[T]) Interface() any {
+	return s.val
+}
 
 func (s signedVariant[T]) Uint8E() (uint8, error) {
 	if s.val < 0 {

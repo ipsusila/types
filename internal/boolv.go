@@ -14,8 +14,13 @@ func (v boolVariant) IsNil() bool {
 	return false
 }
 func (v boolVariant) IsZero() bool {
-	return v.val == false
+	return !v.val
 }
+
+func (v boolVariant) Interface() any {
+	return v.val
+}
+
 func (v boolVariant) Uint8E() (uint8, error) {
 	if v.val {
 		return 1, nil

@@ -28,6 +28,7 @@ type VariantE interface {
 	StringE() (string, error)
 	DurationE() (time.Duration, error)
 	TimeE() (time.Time, error)
+	Interface() any
 
 	Value() (driver.Value, error)
 	MarshalJSON() ([]byte, error)

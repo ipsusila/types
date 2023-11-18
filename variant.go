@@ -2,6 +2,8 @@ package types
 
 import (
 	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/ipsusila/types/internal"
@@ -9,13 +11,13 @@ import (
 
 var _ internal.VariantE = Variant(nil)
 
-// Variant holds various value and handle type conversion.
+// RVariant holds various value and handle type conversion.
 //
 // For conversion to time.Duration and time.Time,
 // if value type is floating point, e.g. nnn.fff
 // then nnn will be treated as seconds,
 // while fff will be treated as nano seconds.
-type Variant interface {
+type RVariant interface {
 	IsNil() bool
 	IsZero() bool
 	Uint8E() (uint8, error)
@@ -35,6 +37,7 @@ type Variant interface {
 	StringE() (string, error)
 	DurationE() (time.Duration, error)
 	TimeE() (time.Time, error)
+	Interface() any
 
 	Uint8() uint8
 	Uint16() uint16
@@ -58,16 +61,38 @@ type Variant interface {
 	MarshalJSON() ([]byte, error)
 }
 
+// Variant is a variant that can be modified
+type Variant interface {
+	RVariant
+
+	Set(v any) error
+	UnmarshalJSON(data []byte) error
+	Scan(src any) error
+}
+
 type variant struct {
 	v internal.VariantE
 }
 
-// NewVariant create variant from given value
-func NewVariant(i interface{}) Variant {
-	if v, ok := i.(Variant); ok {
+// NewRVariant create readonly variant from given value
+func NewRVariant(i interface{}) RVariant {
+	if v, ok := i.(RVariant); ok {
 		return v
 	}
 	return variant{v: internal.NewVariantE(i)}
+}
+
+// NewVariant create r/w variant from optionally given value
+func NewVariant(i ...interface{}) Variant {
+	if len(i) == 0 {
+		return &variant{v: internal.NewVariantE(nil)}
+	}
+
+	// use first argument only
+	if v, ok := i[0].(Variant); ok {
+		return v
+	}
+	return &variant{v: internal.NewVariantE(i[0])}
 }
 
 func (v variant) IsNil() bool {
@@ -75,6 +100,9 @@ func (v variant) IsNil() bool {
 }
 func (v variant) IsZero() bool {
 	return v.v.IsZero()
+}
+func (v variant) Interface() any {
+	return v.v.Interface()
 }
 func (v variant) Uint8E() (uint8, error) {
 	return v.v.Uint8E()
@@ -203,4 +231,23 @@ func (v variant) Value() (driver.Value, error) {
 }
 func (v variant) MarshalJSON() ([]byte, error) {
 	return v.v.MarshalJSON()
+}
+
+func (v *variant) Set(value any) error {
+	v.v = internal.NewVariantE(value)
+	if value != nil && v.v.IsNil() {
+		return fmt.Errorf("unsupported variant type %T -> %v", value, value)
+	}
+	return nil
+}
+func (v *variant) Scan(src any) error {
+	return v.Set(src)
+}
+
+func (v *variant) UnmarshalJSON(data []byte) error {
+	var dest any
+	if err := json.Unmarshal(data, &dest); err != nil {
+		return err
+	}
+	return v.Set(dest)
 }

@@ -20,6 +20,9 @@ func (f floatVariant[T]) IsNil() bool {
 func (f floatVariant[T]) IsZero() bool {
 	return f.val == 0
 }
+func (f floatVariant[T]) Interface() any {
+	return f.val
+}
 
 func (f floatVariant[T]) Uint8E() (uint8, error) {
 	if f.val < 0 {
