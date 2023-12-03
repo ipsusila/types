@@ -1,14 +1,78 @@
 package types
 
 import (
+	"fmt"
+	"strings"
 	"time"
 )
 
 // KV key value data
 type KV map[string]any
 
+func (k KV) splitKey(key string) ([]string, error) {
+	keys := []string{}
+	sb := strings.Builder{}
+	escape := false
+	for _, c := range key {
+		switch c {
+		case '\\':
+			if escape {
+				escape = false
+				sb.WriteByte('\\')
+			} else {
+				escape = true
+			}
+		case '.':
+			if escape {
+				escape = false
+				sb.WriteByte('.')
+			} else if sb.Len() > 0 {
+				keys = append(keys, sb.String())
+				sb.Reset()
+			}
+		default:
+			if escape {
+				return keys, fmt.Errorf("invalid KV key: %s", key)
+			}
+			sb.WriteRune(c)
+		}
+	}
+	if sb.Len() > 0 {
+		keys = append(keys, sb.String())
+	}
+	return keys, nil
+}
+
+func (k KV) get(keys []string) (any, bool) {
+	nk := len(keys)
+	if nk == 0 {
+		return nil, false
+	}
+	lk := keys[nk-1]
+	rkeys := keys[0 : nk-1]
+	kv := map[string]any(k)
+	for _, key := range rkeys {
+		v, ok := kv[key]
+		if !ok {
+			return nil, false
+		}
+		kv, ok = v.(map[string]any)
+		if !ok {
+			return nil, false
+		}
+	}
+
+	if kv == nil {
+		return nil, false
+	}
+	v, ok := kv[lk]
+	return v, ok
+}
+
 func (k KV) V(key string) RVariant {
-	return NewRVariant(k[key])
+	keys, _ := k.splitKey(key)
+	val, _ := k.get(keys)
+	return NewRVariant(val)
 }
 
 func (k KV) Bool(key string, def ...bool) bool {
