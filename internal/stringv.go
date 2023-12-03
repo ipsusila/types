@@ -4,9 +4,30 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 )
+
+type timeLayout struct {
+	layout string
+	hasTZ  bool
+}
+
+var layouts = []timeLayout{
+	{layout: time.RFC3339Nano, hasTZ: true},
+	{layout: time.RFC3339, hasTZ: true},
+	{layout: time.DateTime, hasTZ: false},
+	{layout: time.DateOnly, hasTZ: false},
+	{layout: time.TimeOnly, hasTZ: false},
+}
+
+func (t timeLayout) parse(str string) (time.Time, error) {
+	if t.hasTZ {
+		return time.Parse(t.layout, str)
+	}
+	return time.ParseInLocation(t.layout, str, time.Local)
+}
 
 type stringVariant struct {
 	val string
@@ -105,8 +126,12 @@ func (s stringVariant) DurationE() (time.Duration, error) {
 	return time.ParseDuration(s.val)
 }
 func (s stringVariant) TimeE() (time.Time, error) {
-	// TODO:
-	return time.Time{}, nil
+	for _, tl := range layouts {
+		if tm, err := tl.parse(s.val); err == nil {
+			return tm, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("unsupported Time format: %s", s.val)
 }
 func (s stringVariant) Value() (driver.Value, error) {
 	return driver.Value(s.val), nil
